@@ -83,7 +83,6 @@ class CPU {
         // Execute the instruction. Perform the actions for the instruction as
         // outlined in the LS-8 spec.
 
-        // mnemonics for the instructions
         const LDI = 0b10011001;
         const PRN = 0b01000011;
         const MUL = 0b10101010;
@@ -112,7 +111,6 @@ class CPU {
             handle_HLT();
         };
 
-        // branch table to pair mnemonics with functions
         const branchTable = {
             [LDI]: handle_LDI,
             [PRN]: handle_PRN,
