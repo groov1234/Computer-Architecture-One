@@ -1,40 +1,43 @@
 const RAM = require('./ram');
 const CPU = require('./cpu');
+const fs = require('fs');
 
 /**
  * Load an LS8 program into memory
  *
  * TODO: load this from a file on disk instead of having it hardcoded
  */
-function loadMemory() {
-    // Hardcoded program to print the number 8 on the console
+function loadMemory(cpu) {
+  let program = [];
+  if (process.argv.length === 3) {
+    const lineReader = require('readline').createInterface({
+      input: fs.createReadStream(process.argv[2])
+    });
 
-    // const program = [ // print8.ls8
-    //     "10011001", // LDI R0,8  Store 8 into R0
-    //     "00000000",
-    //     "00001000",
-    //     "01000011", // PRN R0    Print the value in R0
-    //     "00000000",
-    //     "00000001"  // HLT       Halt and quit
-    // ];
-    const program = [
-        "10011001", //LDI R0,8  Load R0 with value 8
-        "00000000",
-        "00001000",
-        "10011001", //LDI R1,9  Load R1 with value 9
-        "00000001",
-        "00001001",
-        "10101010", //MUL R0,R1 Multiply R0*R1, storing result in R0
-        "00000000",
-        "00000001",
-        "01000011", //PRN R0    Print value in R0
-        "00000000",
-        "00000001" //HLT       Halt
-    ];
-    // Load the program into the CPU's memory a byte at a time
-    for (let i = 0; i < program.length; i++) {
-        cpu.poke(i, parseInt(program[i], 2));
-    }
+    lineReader.on('line', function(line) {
+      let str = line.split('#')[0].slice(0, 8);
+
+      if (str.length > 1) {
+        program.push(str);
+      } else {
+        return;
+      }
+    });
+
+    lineReader.on('close', function() {
+      processProgram(program, cpu);
+    });
+  } else {
+    console.log('Please include an .ls8 file name to execute.');
+  }
+}
+
+//
+function processProgram(arr, cpu) {
+  for (let i = 0; i < arr.length; i++) {
+    cpu.poke(i, parseInt(arr[i], 2));
+  }
+  cpu.startClock();
 }
 
 /**
@@ -47,5 +50,3 @@ let cpu = new CPU(ram);
 // TODO: get name of ls8 file to load from command line
 
 loadMemory(cpu);
-
-cpu.startClock();
